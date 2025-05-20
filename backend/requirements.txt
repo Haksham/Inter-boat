@@ -1,0 +1,6 @@
+express
+cors
+dotenv
+react-icons
+
+npm install -D nodemon
