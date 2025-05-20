@@ -2,5 +2,6 @@ express
 cors
 dotenv
 react-icons
+mysql2
 
-npm install -D nodemon
+npm install -D nodemon   or  npm install --save-dev nodemon

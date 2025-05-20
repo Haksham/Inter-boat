@@ -1,1 +1,5 @@
 npm install
+npm create vite@latest frontend -- --template react
+npm install tailwindcss @tailwindcss/vite
+
+axios
