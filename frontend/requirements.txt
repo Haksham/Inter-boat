@@ -1,5 +1,9 @@
 npm install
 npm create vite@latest frontend -- --template react
 npm install tailwindcss @tailwindcss/vite
+npm install --save-dev vite-plugin-qrcode
 
 axios
+react-router-dom
+
+// plugins: https://github.com/vitejs/awesome-vite?tab=readme-ov-file#plugins
