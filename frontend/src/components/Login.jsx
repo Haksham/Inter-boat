@@ -1,18 +1,32 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username || !password) {
       setError("Please enter both username and password.");
       return;
     }
     setError("");
+    try {
+      const response = await axios.post("http://localhost:8000/login", { username, password });
+      if (response.data.success && response.data.role === "host") {
+        navigate("/host");
+      } else if (response.data.success && response.data.role === "client") {
+        navigate(`/client/${response.data.id - 1}`);
+      } else {
+        setError("Invalid credentials or not a host.");
+      }
+    } catch (err) {
+      setError("Invalid credentials.");
+    }
   };
 
   return (

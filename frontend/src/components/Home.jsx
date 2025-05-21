@@ -7,7 +7,6 @@ function Home() {
   const fetchBlogs = async () => {
     const response = await axios.get("http://localhost:8000/");
     setBlogs(response.data);
-    console.log(response.data);
   }
 
   useEffect(() => {
