@@ -23,7 +23,12 @@ function Home() {
             blogs.map((blog, idx) => (
               <div key={idx} className="bg-white p-4 rounded shadow">
                 <h3 className="text-lg font-bold text-blue-800">{blog.title || `Blog #${idx + 1}`}</h3>
-                <p className="text-gray-700 mt-2">{blog.content || blog}</p>
+                <p className="text-gray-700 mt-2">
+                  Article ID: {blog.article_id}<br />
+                  Client ID: {blog.client_id}<br />
+                  Submitted At: {blog.submitted_at}<br />
+                  Status: {blog.status}
+                </p>
               </div>
             ))
           ) : (

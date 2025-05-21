@@ -6,19 +6,8 @@ function Footer() {
           &copy; {new Date().getFullYear()} Inter-Boat. All rights reserved.
         </span>
         <div className="flex space-x-4 mt-2 md:mt-0">
-          <a
-            href="https://github.com/haksham"
-            target="_blank"
-            className="text-blue-600 hover:underline"
-          >
-            GitHub
-          </a>
-          <a
-            href="mailto:support@interboat.com"
-            className="text-blue-600 hover:underline"
-          >
-            Contact
-          </a>
+          <a href="https://github.com/haksham" target="_blank" className="text-blue-600 hover:underline">GitHub </a>
+          <a href="mailto:harsh924hashvm@gmail.com" className="text-blue-600 hover:underline">Contact</a>
         </div>
       </div>
     </footer>
