@@ -203,4 +203,4 @@ Pull requests and suggestions are welcome! Please open an issue first to discuss
 
 ---
 
-Enjoy using **Inter-Boat**! 🚤
+Enjoy using **Inter-Boat**!
