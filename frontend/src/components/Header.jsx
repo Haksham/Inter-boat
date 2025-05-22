@@ -32,7 +32,7 @@ function Header() {
         <header className="fixed top-0 left-0 w-full z-50 bg-white shadow">
             <div className="flex justify-between items-center bg-white shadow p-4">
                 <Link to={"/"}>
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"><GoHome /></button>
+                    <button className="bg-blue-600 text-white px-4 py-3 rounded hover:bg-blue-700 transition"><GoHome /></button>
                 </Link>
                 <span className="text-2xl font-bold text-blue-700">Inter-Boat</span>
                 {username ? (
@@ -41,7 +41,7 @@ function Header() {
                             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
                             onClick={handleTask}>{username}</button>
                         <button
-                            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                            className="bg-red-600 text-white px-4 py-3 rounded hover:bg-red-700 transition"
                             onClick={handleLogout}>
                             <FiLogOut />
                         </button>

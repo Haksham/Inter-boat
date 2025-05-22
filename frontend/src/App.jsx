@@ -16,7 +16,7 @@ function App() {
     <Router>
       <div className="min-h-screen flex flex-col">
         <Header />
-        <div className="flex-1 my-12">
+        <div className="flex-1 my-6">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />

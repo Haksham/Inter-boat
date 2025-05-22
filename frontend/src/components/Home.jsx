@@ -24,7 +24,7 @@ function Home() {
   return (
     <>
       <div className="max-w-2xl mx-auto mt-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center mt-15 justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Client Blogs</h2>
           {/* Desktop: show buttons inline, Mobile: show dropdown */}
           <div>
