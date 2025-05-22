@@ -1,3 +1,0 @@
-CREATE USER 'interboat_user'@'localhost' IDENTIFIED BY 'secure_password';
-GRANT ALL PRIVILEGES ON inter_boat.* TO 'interboat_user'@'localhost';
-FLUSH PRIVILEGES;
