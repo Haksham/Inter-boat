@@ -39,7 +39,7 @@ router.post('/login', (req, res) => {
     (err, results) => {
       if (err) return res.status(500).json({ error: "Database error" });
       if (results.length === 0) return res.status(401).json({ error: "Invalid credentials" });
-      // You can add JWT or session here for production
+
       res.json({ success: true, role: results[0].role, id: results[0].id  });
     }
   );
@@ -57,7 +57,7 @@ router.post("/delete-article",(req,res)=>{
 router.post("/host/update-status", (req, res) => {
   const {article_id,status}=req.body;
   const updated_by = 1;
-  const query =`UPDATE article_status SET status = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP WHERE article_id = ?`;
+  const query =`update article_status set status = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP where article_id = ?`;
   db.query(query,[status, updated_by,article_id],(err,results)=>{
     if (err) return res.status(500).json({ error: "Database error" });
     res.json({ success: true });
@@ -68,13 +68,13 @@ router.post("/createClient", (req, res) => {
   const { username, password } = req.body;
   const role = "client";
   //  check if username exists
-  db.query("SELECT id FROM users WHERE username = ?", [username], (err, results) => {
+  db.query("select id from users where username = ?", [username], (err, results) => {
     if (err) return res.status(500).json({ error: "Database error" });
     if (results.length > 0) {
       return res.status(409).json({ error: "Username already exists" });
     }
     // if not exists, insert new user
-    const query = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+    const query = "insert into users (username, password, role) values (?, ?, ?)";
     db.query(query, [username, password, role], (err2, results2) => {
       if (err2) return res.status(500).json({ error: "Database error" });
       res.json({ success: true, id: results2.insertId, role });

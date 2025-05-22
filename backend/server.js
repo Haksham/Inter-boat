@@ -4,8 +4,8 @@ const dataRoute = require("./routes/dataRoute");
 const clientRoute = require("./routes/clientRoute");
 
 const app=express();
-const port=8000;
-const corsOption={origin:"http://localhost:5173"};
+const port= process.env.EXPRESS_PORT;
+const corsOption={origin: process.env.FRONTEND_URL};
 
 app.use(cors(corsOption));
 app.use(express.json()); 

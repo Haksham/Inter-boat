@@ -33,16 +33,16 @@ router.get('/client/:id/articles', (req, res) => {
 router.post("/client/:id/add-article", (req, res) => {
   const { title, content, client_id } = req.body;
   const insertArticleQuery = `
-    INSERT INTO articles (title, content, client_id, submitted_at)
-    VALUES (?, ?, ?, CURRENT_TIMESTAMP);
+    insert into articles (title, content, client_id, submitted_at)
+    values (?, ?, ?, CURRENT_TIMESTAMP);
   `;
   db.query(insertArticleQuery, [title, content, client_id], (err, results) => {
     if (err) return res.status(500).json({ error: "Database error" });
     const article_id = results.insertId;
 
     const insertStatusQuery = `
-      INSERT INTO article_status (article_id, status, updated_by)
-      VALUES (?, 'pending', ?)
+      insert into article_status (article_id, status, updated_by)
+      values (?, 'pending', ?)
     `;
     db.query(insertStatusQuery, [article_id, client_id], (err2) => {
       if (err2) return res.status(500).json({ error: "Database error" });
@@ -54,9 +54,9 @@ router.post("/client/:id/add-article", (req, res) => {
 router.post("/client/:id/edit-article", (req, res) => {
   const { article_id, title, content } = req.body;
   const query = `
-    UPDATE articles 
-    SET title = ?, content = ? 
-    WHERE id = ?;
+    update articles 
+    set title = ?, content = ? 
+    where id = ?;
   `;
   db.query(query, [title, content, article_id], (err, results) => {
   if (err) {
