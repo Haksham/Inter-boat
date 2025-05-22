@@ -31,8 +31,6 @@ router.get('/', (req, res) => {
   });
 });
 
-
-
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
   db.query(
@@ -46,27 +44,6 @@ router.post('/login', (req, res) => {
     }
   );
 });
-
-router.get('/client/:id/articles', (req, res) => {
-  const clientId = req.params.id;
-  const query = `
-    select 
-      a.id as article_id,
-      a.title,
-      a.content,
-      a.client_id,
-      a.submitted_at,
-      s.status
-    from articles a
-    left join article_status s on s.article_id = a.id
-    where a.client_id = ?;
-  `;
-  db.query(query, [clientId], (err, results) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-    res.json(results);
-  });
-});
-
 
 router.post("/delete-article",(req,res)=>{
   const article_id = req.body.article_id;
@@ -87,42 +64,20 @@ router.post("/host/update-status", (req, res) => {
   })
 });
 
-
-
-router.post("/client/:id/edit-article", (req, res) => {
-  const { article_id, title, content } = req.body;
-  const query = `
-    UPDATE articles 
-    SET title = ?, content = ? 
-    WHERE id = ?;
-  `;
-  db.query(query, [title, content, article_id], (err, results) => {
-  if (err) {
-    console.error("Edit Article Error:", err); // Add this line
-    return res.status(500).json({ error: "Database error" });
-  }
-  res.json({ success: true });
-  });
-});
-
-
-router.post("/client/:id/add-article", (req, res) => {
-  const { title, content, client_id } = req.body;
-  const insertArticleQuery = `
-    INSERT INTO articles (title, content, client_id, submitted_at)
-    VALUES (?, ?, ?, CURRENT_TIMESTAMP);
-  `;
-  db.query(insertArticleQuery, [title, content, client_id], (err, results) => {
+router.post("/createClient", (req, res) => {
+  const { username, password } = req.body;
+  const role = "client";
+  // First, check if username exists
+  db.query("SELECT id FROM users WHERE username = ?", [username], (err, results) => {
     if (err) return res.status(500).json({ error: "Database error" });
-    const article_id = results.insertId;
-
-    const insertStatusQuery = `
-      INSERT INTO article_status (article_id, status, updated_by)
-      VALUES (?, 'pending', ?)
-    `;
-    db.query(insertStatusQuery, [article_id, client_id], (err2) => {
+    if (results.length > 0) {
+      return res.status(409).json({ error: "Username already exists" });
+    }
+    // If not exists, insert new user
+    const query = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+    db.query(query, [username, password, role], (err2, results2) => {
       if (err2) return res.status(500).json({ error: "Database error" });
-      res.json({ success: true });
+      res.json({ success: true, id: results2.insertId, role });
     });
   });
 });

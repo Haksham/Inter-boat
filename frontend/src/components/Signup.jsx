@@ -1,18 +1,28 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username || !password) {
       setError("Please enter both username and password.");
       return;
     }
     setError("");
+    try{
+      const response = await axios.post("http://localhost:8000/createClient", { username, password });
+      if (response.data.success && response.data.role === "client") {
+        navigate(`/login`);
+      } else {
+        setError("Invalid credentials or unknown role.");
+      }
+    }catch(err) {setError("Invalid credentials.");}
   };
 
   return (
