@@ -16,15 +16,15 @@ db.connect((err) => {
 
 router.get('/', (req, res) => {
   const query = `
-    SELECT 
-      a.id AS article_id,
+    select 
+      a.id as article_id,
       a.title,
       a.content,
       a.client_id,
       a.submitted_at,
       s.status
-    FROM articles a
-    LEFT JOIN article_status s ON s.article_id = a.id;
+    from articles a
+    left join article_status s on s.article_id = a.id;
   `;
   db.query(query, (err, results) => {
     res.json(results);
@@ -34,7 +34,7 @@ router.get('/', (req, res) => {
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
   db.query(
-    "SELECT * FROM users WHERE username = ? AND password = ?",
+    "select * from users where username = ? and password = ?",
     [username, password],
     (err, results) => {
       if (err) return res.status(500).json({ error: "Database error" });
@@ -67,13 +67,13 @@ router.post("/host/update-status", (req, res) => {
 router.post("/createClient", (req, res) => {
   const { username, password } = req.body;
   const role = "client";
-  // First, check if username exists
+  //  check if username exists
   db.query("SELECT id FROM users WHERE username = ?", [username], (err, results) => {
     if (err) return res.status(500).json({ error: "Database error" });
     if (results.length > 0) {
       return res.status(409).json({ error: "Username already exists" });
     }
-    // If not exists, insert new user
+    // if not exists, insert new user
     const query = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
     db.query(query, [username, password, role], (err2, results2) => {
       if (err2) return res.status(500).json({ error: "Database error" });

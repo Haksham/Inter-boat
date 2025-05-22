@@ -16,9 +16,7 @@ function Edit() {
         if (article) {
           setTitle(article.title);
           setContent(article.content || "");
-        }
-      });
-  }, [id, articleId]);
+        }});}, [id, articleId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,9 +31,7 @@ function Edit() {
         content,
       });
       navigate(`/client/${id}`);
-    } catch (err) {
-      setError("Failed to update article.");
-    }
+    } catch (err) {setError("Failed to update article.");}
   };
 
   return (
@@ -48,8 +44,7 @@ function Edit() {
             className="w-full border px-3 py-2 rounded"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            required
-          />
+            required/>
         </div>
         <div>
           <label className="block font-medium mb-1">Content</label>
@@ -57,12 +52,10 @@ function Edit() {
             className="w-full border px-3 py-2 rounded"
             value={content}
             onChange={e => setContent(e.target.value)}
-            required
-          />
+            required/>
         </div>
         {error && <div className="text-red-600">{error}</div>}
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" type="submit">
-          Update Article
+        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" type="submit"> Update Article
         </button>
       </form>
     </div>

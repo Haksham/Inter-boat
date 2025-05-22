@@ -63,7 +63,6 @@ function Signup() {
         </p>
       </div>
     </div>
-  );
-}
+);}
 
 export default Signup;

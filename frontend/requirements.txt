@@ -5,5 +5,6 @@ npm install --save-dev vite-plugin-qrcode
 
 axios
 react-router-dom
+react-icons
 
 // plugins: https://github.com/vitejs/awesome-vite?tab=readme-ov-file#plugins

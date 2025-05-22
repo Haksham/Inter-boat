@@ -17,14 +17,10 @@ function Add() {
     }
     try {
       await axios.post(`http://localhost:8000/client/${id}/add-article`, {
-        client_id: id,
-        title,
-        content,
+        client_id: id, title, content,
       });
       navigate(`/client/${id}`);
-    } catch (err) {
-      setError("Failed to add article.");
-    }
+    } catch (err) {setError("Failed to add article.");}
   };
 
   return (
@@ -37,8 +33,7 @@ function Add() {
             className="w-full border px-3 py-2 rounded"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            required
-          />
+            required/>
         </div>
         <div>
           <label className="block font-medium mb-1">Content</label>
@@ -46,8 +41,7 @@ function Add() {
             className="w-full border px-3 py-2 rounded"
             value={content}
             onChange={e => setContent(e.target.value)}
-            required
-          />
+            required/>
         </div>
         {error && <div className="text-red-600">{error}</div>}
         <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" type="submit">
@@ -55,6 +49,5 @@ function Add() {
         </button>
       </form>
     </div>
-  );
-}
+);}
 export default Add;

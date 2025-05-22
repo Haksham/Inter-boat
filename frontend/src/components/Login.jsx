@@ -27,12 +27,8 @@ function Login() {
         localStorage.setItem("userId", response.data.id-1);
         navigate(`/client/${response.data.id-1}`);
         window.location.reload();
-      } else {
-        setError("Invalid credentials or unknown role.");
-      }
-    } catch (err) {
-      setError("Invalid credentials.");
-    }
+      } else {setError("Invalid credentials or unknown role.");}
+    } catch (err) {setError("Invalid credentials.");}
   };
 
   return (

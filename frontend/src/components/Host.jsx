@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from "axios";
+import { MdOutlineDelete } from "react-icons/md";
+import { SiTicktick } from "react-icons/si";
 
 function Host() {
   const [blogs, setBlogs] = useState([]);
@@ -33,68 +35,59 @@ function Host() {
         status: statusUpdates[articleId] || "pending"
       });
       fetchBlogs();
-    } catch (err) {
-      alert("Failed to update status");
-    }
+    }catch (err) {alert("Failed to update status");}
   };
 
   const handleDelete = async (articleId) => {
     try {
       await axios.post("http://localhost:8000/delete-article", {
-        article_id: articleId
-      });
-      fetchBlogs();
-    } catch (err) {
-      alert("Failed to delete article");
-    }
+        article_id: articleId});
+      fetchBlogs();} catch (err) {alert("Failed to delete article");}
   };
 
-  useEffect(() => {
-    fetchBlogs();
-  }, []);
+  useEffect(() => {fetchBlogs();}, []);
 
   // Filter blogs based on status
-  const filteredBlogs = filter === "all"
-    ? blogs
-    : blogs.filter(blog => (blog.status || "pending").toLowerCase() === filter);
+  const filteredBlogs = filter === "all" ? blogs: blogs.filter(blog => (blog.status || "pending").toLowerCase() === filter);
 
   return (
     <>
       <div className="max-w-2xl mx-auto mt-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center my-15 justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Client Blogs</h2>
-          <div className="flex space-x-2">
-            <button
-              className={`px-3 py-1 rounded ${filter === "accepted" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-              onClick={() => setFilter("accepted")}
-            >
-              Accepted
-            </button>
-            <button
-              className={`px-3 py-1 rounded ${filter === "rejected" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-              onClick={() => setFilter("rejected")}
-            >
-              Rejected
-            </button>
-            <button
-              className={`px-3 py-1 rounded ${filter === "pending" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-              onClick={() => setFilter("pending")}
-            >
-              Pending
-            </button>
-            <button
-              className={`px-3 py-1 rounded ${filter === "all" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-              onClick={() => setFilter("all")}
-            >
-              All
-            </button>
+          {/* Responsive filter controls */}
+          <div>
+            {/* Mobile Dropdown */}
+            <div className="block sm:hidden">
+              <select className="px-3 py-1 rounded border" value={filter} onChange={e => setFilter(e.target.value)}>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+                <option value="pending">Pending</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+            {/* Desktop Buttons */}
+            <div className="hidden sm:flex space-x-2">
+              <button
+                className={`px-3 py-1 rounded ${filter === "accepted" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
+                onClick={() => setFilter("accepted")}>Accepted</button>
+              <button
+                className={`px-3 py-1 rounded ${filter === "rejected" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
+                onClick={() => setFilter("rejected")}>Rejected</button>
+              <button
+                className={`px-3 py-1 rounded ${filter === "pending" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
+                onClick={() => setFilter("pending")}>Pending</button>
+              <button
+                className={`px-3 py-1 rounded ${filter === "all" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
+                onClick={() => setFilter("all")}>All</button>
+            </div>
           </div>
         </div>
         <div className="space-y-4">
           {Array.isArray(filteredBlogs) && filteredBlogs.length > 0 ? (
             filteredBlogs.map((blog, idx) => (
               <div key={idx}>
-                <div className="bg-white p-4 rounded shadow flex items-center justify-between relative">
+                <div className="bg-white p-3 rounded shadow flex items-center justify-between relative">
                   {/* Blog details */}
                   <div>
                     <h3 className="text-lg font-bold text-blue-800">{blog.title || `Blog #${idx + 1}`}</h3>
@@ -106,33 +99,30 @@ function Host() {
                     </p>
                   </div>
                   {/* Select and Save/Delete buttons on the right */}
-                  <div className="mr-4 flex flex-col items-center">
+                  <div className="flex flex-col items-center">
                     <select
                       className="border rounded px-2 py-1 mb-2"
                       value={statusUpdates[blog.article_id] || blog.status || "pending"}
-                      onChange={e => handleStatusChange(blog.article_id, e.target.value)}
-                    >
+                      onChange={e => handleStatusChange(blog.article_id, e.target.value)}>
                       <option value="pending">Pending</option>
                       <option value="accepted">Accept</option>
                       <option value="rejected">Reject</option>
                     </select>
                     <button
                       className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                      onClick={() => handleSave(blog.article_id)}
-                    >
-                      Save
+                      onClick={() => handleSave(blog.article_id)}>
+                      <SiTicktick />
                     </button>
                     <button
                       className="bg-red-600 text-white px-3 py-1 my-1 rounded hover:bg-blue-700"
                       onClick={() => handleDelete(blog.article_id)}>
-                      Delete
+                      <MdOutlineDelete />
                     </button>
                   </div>
                   {/* View More Button on bottom right */}
                   <button
                     className="absolute right-2 bottom-2 text-blue-600 hover:underline text-sm"
-                    onClick={() => toggleExpand(blog.article_id)}
-                  >
+                    onClick={() => toggleExpand(blog.article_id)}>
                     {expanded[blog.article_id] ? "Hide" : "View More"}
                   </button>
                 </div>
@@ -141,13 +131,9 @@ function Host() {
                   <div className="bg-gray-100 px-4 py-2 rounded-b shadow-inner text-gray-800">
                     <strong>Description:</strong>
                     <div className="whitespace-pre-line mt-1">{blog.content || "No description available."}</div>
-                  </div>
-                )}
+                  </div>)}
               </div>
-            ))
-          ) : (
-            <p className="text-gray-500">No blogs available.</p>
-          )}
+            ))) : (<p className="text-gray-500">No blogs available.</p>)}
         </div>
       </div>
     </>
