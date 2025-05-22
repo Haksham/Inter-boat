@@ -16,9 +16,9 @@ function Add() {
       return;
     }
     try {
-      await axios.post(`http://localhost:8000/client/${id}/add-article`, {
+      await axios.post(`http://localhost:8000/client/${id}/add-article`,{
         client_id: id, title, content,
-      });
+      }, { withCredentials: true } );
       navigate(`/client/${id}`);
     } catch (err) {setError("Failed to add article.");}
   };

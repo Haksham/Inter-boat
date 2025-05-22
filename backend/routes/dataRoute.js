@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mysql = require("mysql2");
+const { requireLogin, requireRole } = require('../middleware/session');
 require('dotenv').config();
 
 const db = mysql.createConnection({
@@ -39,6 +40,13 @@ router.post('/login', (req, res) => {
     (err, results) => {
       if (err) return res.status(500).json({ error: "Database error" });
       if (results.length === 0) return res.status(401).json({ error: "Invalid credentials" });
+
+      // Set session
+      req.session.user = {
+        id: results[0].id,
+        username: results[0].username,
+        role: results[0].role
+      };
 
       res.json({ success: true, role: results[0].role, id: results[0].id  });
     }
@@ -79,6 +87,23 @@ router.post("/createClient", (req, res) => {
       if (err2) return res.status(500).json({ error: "Database error" });
       res.json({ success: true, id: results2.insertId, role });
     });
+  });
+});
+
+router.get('/me', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  res.json(req.session.user);
+});
+
+router.post('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      return res.status(500).json({ error: "Logout failed" });
+    }
+    res.clearCookie('session_id'); // Make sure this matches your session key
+    res.json({ success: true });
   });
 });
 

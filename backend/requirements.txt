@@ -4,6 +4,7 @@ dotenv
 react-icons
 mysql2
 express-session
+express-mysql-session
 
 npm install
 npm install -D nodemon   or  npm install --save-dev nodemon

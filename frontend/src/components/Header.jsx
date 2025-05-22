@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FiLogOut } from "react-icons/fi";
 import { GoHome } from "react-icons/go";
+import axios from "axios";
 
 function Header() {
     const [username, setUsername] = useState(localStorage.getItem("username"));
@@ -16,17 +17,27 @@ function Header() {
         return () => window.removeEventListener("storage", onStorage);
     }, []);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await axios.post("http://localhost:8000/logout", {}, { withCredentials: true });
+        } catch (err) {}
+        localStorage.setItem("logout", Date.now());
         localStorage.removeItem("username");
         localStorage.removeItem("userId");
+        localStorage.removeItem("role"); // Add this line
         setUsername(null);
         setUserId(null);
         window.location.href = "/login";
     };
 
     const handleTask = () => {
-        if (userId!=0) {navigate(`/client/${userId}`);
-        }else if(userId==0){navigate('/host');}};
+        const role = localStorage.getItem("role");
+        if (role === "host") {
+            navigate("/host");
+        } else if (role === "client") {
+            navigate(`/client/${userId}`);
+        }
+    };
 
     return (
         <header className="fixed top-0 left-0 w-full z-50 bg-white shadow">

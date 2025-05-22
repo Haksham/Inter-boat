@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { MdOutlineDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
@@ -8,6 +9,30 @@ function Host() {
   const [statusUpdates, setStatusUpdates] = useState({});
   const [expanded, setExpanded] = useState({});
   const [filter, setFilter] = useState("all");
+  const navigate = useNavigate();
+
+  // Auth check before fetching blogs
+  useEffect(() => {
+    axios.get("http://localhost:8000/me", { withCredentials: true })
+      .then(res => {
+        if (res.data.role !== "host") {
+          navigate("/login");
+        } else {
+          fetchBlogs();
+        }
+      })
+      .catch(() => navigate("/login"));
+    // Listen for logout in other tabs
+    const onStorage = (e) => {
+      if (e.key === "logout") {
+        axios.get("http://localhost:8000/me", { withCredentials: true })
+          .catch(() => window.location.href = "/login");
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+    // eslint-disable-next-line
+  }, [navigate]);
 
   const toggleExpand = (articleId) => {
     setExpanded(prev => ({
@@ -17,7 +42,7 @@ function Host() {
   };
 
   const fetchBlogs = async () => {
-    const response = await axios.get("http://localhost:8000/");
+    const response = await axios.get("http://localhost:8000/",{ withCredentials: true });
     setBlogs(response.data);
   };
 
@@ -30,22 +55,22 @@ function Host() {
 
   const handleSave = async (articleId) => {
     try {
-      await axios.post("http://localhost:8000/host/update-status", {
+      await axios.post("http://localhost:8000/host/update-status",{
         article_id: articleId,
         status: statusUpdates[articleId] || "pending"
-      });
+      },
+    { withCredentials: true } );
       fetchBlogs();
     }catch (err) {alert("Failed to update status");}
   };
 
   const handleDelete = async (articleId) => {
     try {
-      await axios.post("http://localhost:8000/delete-article", {
-        article_id: articleId});
+      await axios.post("http://localhost:8000/delete-article" ,{
+        article_id: articleId},
+      { withCredentials: true } );
       fetchBlogs();} catch (err) {alert("Failed to delete article");}
   };
-
-  useEffect(() => {fetchBlogs();}, []);
 
   // Filter blogs based on status
   const filteredBlogs = filter === "all" ? blogs: blogs.filter(blog => (blog.status || "pending").toLowerCase() === filter);

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mysql = require("mysql2");
+const { requireLogin, requireRole } = require('../middleware/session');
 require('dotenv').config();
 
 const db = mysql.createConnection({
@@ -10,8 +11,11 @@ const db = mysql.createConnection({
   database: process.env.MYSQL_DATABASE,
 });
 
-router.get('/client/:id/articles', (req, res) => {
+router.get('/client/:id/articles', requireLogin, requireRole('client'), (req, res) => {
   const clientId = req.params.id;
+  if (parseInt(req.session.user.id) !== parseInt(clientId)) {
+    return res.status(403).json({ error: "Forbidden: Not your data" });
+  }
   const query = `
     select 
       a.id as article_id,
@@ -30,7 +34,7 @@ router.get('/client/:id/articles', (req, res) => {
   });
 });
 
-router.post("/client/:id/add-article", (req, res) => {
+router.post("/client/:id/add-article",requireLogin, requireRole('client'), (req, res) => {
   const { title, content, client_id } = req.body;
   const insertArticleQuery = `
     insert into articles (title, content, client_id, submitted_at)
@@ -51,7 +55,7 @@ router.post("/client/:id/add-article", (req, res) => {
   });
 });
 
-router.post("/client/:id/edit-article", (req, res) => {
+router.post("/client/:id/edit-article",requireLogin, requireRole('client'), (req, res) => {
   const { article_id, title, content } = req.body;
   const query = `
     update articles 

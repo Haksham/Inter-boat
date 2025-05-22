@@ -10,7 +10,7 @@ function Edit() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/client/${id}/articles`)
+    axios.get(`http://localhost:8000/client/${id}/articles`,{ withCredentials: true })
       .then(res => {
         const article = res.data.find(a => String(a.article_id) === String(articleId));
         if (article) {
@@ -25,11 +25,11 @@ function Edit() {
       return;
     }
     try {
-      await axios.post(`http://localhost:8000/client/${id}/edit-article`, {
+      await axios.post(`http://localhost:8000/client/${id}/edit-article`,{
         article_id: articleId,
         title,
         content,
-      });
+      }, { withCredentials: true } );
       navigate(`/client/${id}`);
     } catch (err) {setError("Failed to update article.");}
   };

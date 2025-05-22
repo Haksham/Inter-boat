@@ -5,6 +5,7 @@ import { MdOutlineDelete } from "react-icons/md";
 import { MdEdit } from "react-icons/md";
 import { IoIosAddCircle } from "react-icons/io";
 
+
 function Client() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -12,14 +13,9 @@ function Client() {
   const [expanded, setExpanded] = useState({});
   const [filter, setFilter] = useState("all");
 
-  useEffect(() => {
-    axios.get(`http://localhost:8000/client/${id}/articles`)
-      .then(res => setArticles(res.data));
-  }, [id]);
-
   const handleDelete = async (articleId) => {
     try {
-      await axios.post("http://localhost:8000/delete-article", {article_id: articleId});
+      await axios.post("http://localhost:8000/delete-article",{article_id: articleId}, { withCredentials: true } );
       setArticles(articles.filter(article => article.article_id !== articleId));
     } catch (err) {alert("Failed to delete article");}};
 
@@ -35,6 +31,20 @@ function Client() {
 
   // Filter articles based on status
   const filteredArticles = filter === "all" ? articles : articles.filter(article => (article.status || "pending").toLowerCase() === filter);
+
+  useEffect(() => {
+    axios.get("http://localhost:8000/me", { withCredentials: true })
+      .then(res => {
+        if (res.data.role !== "client") {
+          navigate("/login");
+        } else {
+          // Only fetch articles if authenticated as client
+          axios.get(`http://localhost:8000/client/${id}/articles`, { withCredentials: true })
+            .then(res => setArticles(res.data));
+        }
+      })
+      .catch(() => navigate("/login"));
+  }, [id, navigate]);
 
   return (
     <div className="max-w-2xl mx-auto mt-8">

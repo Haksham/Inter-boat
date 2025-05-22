@@ -16,16 +16,18 @@ function Login() {
     }
     setError("");
     try {
-      const response = await axios.post("http://localhost:8000/login", { username, password });
+      const response = await axios.post("http://localhost:8000/login", { username, password },{ withCredentials: true });
       if (response.data.success && response.data.role === "host") {
         localStorage.setItem("username", username);
-        localStorage.setItem("userId", response.data.id-1);
+        localStorage.setItem("userId", response.data.id);
+        localStorage.setItem("role", "host"); // Add this line
         navigate("/host");
         window.location.reload();
       } else if (response.data.success && response.data.role === "client") {
         localStorage.setItem("username", username);
-        localStorage.setItem("userId", response.data.id-1);
-        navigate(`/client/${response.data.id-1}`);
+        localStorage.setItem("userId", response.data.id);
+        localStorage.setItem("role", "client"); // Add this line
+        navigate(`/client/${response.data.id}`);
         window.location.reload();
       } else {setError("Invalid credentials or unknown role.");}
     } catch (err) {setError("Invalid credentials.");}

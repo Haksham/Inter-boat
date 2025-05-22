@@ -6,16 +6,27 @@ A full-stack platform for managing client-submitted articles, with host moderati
 
 ## 📁 Folder Structure
 
+<details>
+<summary>Click to view folder structure</summary>
+
 ```
 inter-boat/
+├── .gitignore                # Git ignored files config (hidden)
+├── LICENSE
+├── README.md
+├── requirements.txt
+├── sql_sample_data.txt
 ├── backend/
 │   ├── middleware/
+│   │   └── session.js
 │   ├── routes/
 │   │   ├── clientRoute.js
 │   │   └── dataRoute.js
 │   ├── package.json
 │   ├── requirements.txt
 │   └── server.js
+│   └── .env                  # (hidden, ignored by git)
+│   └── node_modules/         # (hidden, ignored by git)
 ├── frontend/
 │   ├── public/
 │   ├── src/
@@ -36,12 +47,11 @@ inter-boat/
 │   ├── index.html
 │   ├── package.json
 │   ├── requirements.txt
-│   └── vite.config.js
-├── LICENSE
-├── README.md
-├── requirements.txt
-└── learn.txt
+│   ├── vite.config.js
+│   └── eslint.config.js
+│   └── node_modules/         # (hidden, ignored by git)
 ```
+</details>
 
 ---
 
@@ -71,9 +81,13 @@ Create a `.env` file in the `backend/` directory:
 
 ```env
 MYSQL_HOST=localhost
+MYSQL_PORT=3306
 MYSQL_USERNAME=your_mysql_user
 MYSQL_PASSWORD=your_mysql_password
 MYSQL_DATABASE=inter_boat
+SESSION_SECRET=your_session_secret
+EXPRESS_PORT=8000
+FRONTEND_URL=http://localhost:5173
 ```
 
 #### c. Set Up the Database
@@ -152,14 +166,11 @@ The app will be available at [http://localhost:5173](http://localhost:5173).
 
 ---
 
-## 🛠️ Features
+## 🗄️ Database Tables
 
-- Client Registration & Login
-- Host & Client Dashboards
-- Article Submission, Editing, Deletion
-- Host Moderation (Accept/Reject/Pending)
-- Status Filtering & Article Expansion
-- Responsive UI with TailwindCSS
+- **users**: Stores user credentials and roles (`host` or `client`)
+- **articles**: Stores articles submitted by clients
+- **article_status**: Tracks the status (`pending`, `accepted`, `rejected`) of each article and who updated it
 
 ---
 
@@ -169,10 +180,48 @@ The app will be available at [http://localhost:5173](http://localhost:5173).
 
 ```env
 MYSQL_HOST=localhost
+MYSQL_PORT=3306
 MYSQL_USERNAME=your_mysql_user
 MYSQL_PASSWORD=your_mysql_password
 MYSQL_DATABASE=inter_boat
+SESSION_SECRET=your_session_secret
+EXPRESS_PORT=8000
+FRONTEND_URL=http://localhost:5173
 ```
+
+---
+
+## 📦 Dependencies
+
+### Backend
+
+See [`backend/package.json`](backend/package.json):
+
+`express`, `cors`, `dotenv`, `mysql2`, `express-session`, `express-mysql-session`, `react-icons`, `nodemon` (dev)
+
+### Frontend
+
+See [`frontend/package.json`](frontend/package.json):
+
+`react`, `react-dom`, `react-router-dom`, `axios`, `tailwindcss`, `@tailwindcss/vite`, `vite`, `vite-plugin-qrcode`, `react-icons`, `eslint` (dev), `@vitejs/plugin-react` (dev)
+
+---
+
+## 🛠️ Features
+
+- **Client Registration & Login**
+- **Host & Client Dashboards**
+- **Article Submission, Editing, Deletion**
+- **Host Moderation (Accept/Reject/Pending)**
+- **Status Filtering & Article Expansion**
+- **Session-based Authentication**
+- **Responsive UI with TailwindCSS**
+- **Role-based Access Control**
+- **Persistent MySQL-backed Sessions**
+- **Live QR code for dev server (via vite-plugin-qrcode)**
+- **404 Not Found Page**
+- **Reusable Header & Footer**
+- **ESLint and code quality tools**
 
 ---
 
