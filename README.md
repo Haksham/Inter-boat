@@ -24,8 +24,8 @@ inter-boat/
 │   │   └── dataRoute.js
 │   ├── package.json
 │   ├── requirements.txt
-│   └── server.js
-│   └── .env                  # (hidden, ignored by git)
+│   ├── server.js
+│   ├── .env                  # (hidden, ignored by git)
 │   └── node_modules/         # (hidden, ignored by git)
 ├── frontend/
 │   ├── public/
@@ -41,14 +41,17 @@ inter-boat/
 │   │       ├── Header.jsx
 │   │       ├── Home.jsx
 │   │       ├── Host.jsx
+│   │       ├── LoadingSpinner.jsx
 │   │       ├── Login.jsx
 │   │       ├── NotFoundPage.jsx
-│   │       └── Signup.jsx
+│   │       ├── Signup.jsx
+│   │       └── StatusFilter.jsx
 │   ├── index.html
 │   ├── package.json
 │   ├── requirements.txt
 │   ├── vite.config.js
-│   └── eslint.config.js
+│   ├── eslint.config.js
+│   ├── .env                  # (hidden, ignored by git)
 │   └── node_modules/         # (hidden, ignored by git)
 ```
 </details>
@@ -126,14 +129,7 @@ CREATE TABLE article_status (
 );
 ```
 
-- Optionally, seed with some users:
-
-```sql
-INSERT INTO users (username, password, role) VALUES
-('host_user', 'pass0', 'host'),
-('client1', 'pass1', 'client'),
-('client2', 'pass2', 'client');
-```
+- Optionally, seed with some users and articles using [`sql_sample_data.txt`](sql_sample_data.txt).
 
 #### d. Start the Backend Server
 
@@ -156,7 +152,15 @@ cd ../frontend
 npm install
 ```
 
-#### b. Start the Frontend Dev Server
+#### b. Configure Environment Variables
+
+Create a `.env` file in the `frontend/` directory:
+
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+#### c. Start the Frontend Dev Server
 
 ```bash
 npm run dev
@@ -187,6 +191,12 @@ MYSQL_DATABASE=inter_boat
 SESSION_SECRET=your_session_secret
 EXPRESS_PORT=8000
 FRONTEND_URL=http://localhost:5173
+```
+
+**Frontend `.env` example:**
+
+```env
+VITE_API_BASE_URL=http://localhost:8000
 ```
 
 ---
@@ -221,6 +231,7 @@ See [`frontend/package.json`](frontend/package.json):
 - **Live QR code for dev server (via vite-plugin-qrcode)**
 - **404 Not Found Page**
 - **Reusable Header & Footer**
+- **Loading Spinners for Data Fetching**
 - **ESLint and code quality tools**
 
 ---
@@ -230,6 +241,7 @@ See [`frontend/package.json`](frontend/package.json):
 - Make sure MySQL is running and accessible with the credentials you provide.
 - Use different browsers or incognito mode to test host and client roles simultaneously.
 - For production, use hashed passwords and secure session management.
+- Environment files (`.env`) are ignored by git for security.
 
 ---
 

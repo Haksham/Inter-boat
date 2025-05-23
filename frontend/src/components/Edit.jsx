@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+const URL=import.meta.env.VITE_API_BASE_URL;
 
 function Edit() {
   const { id, articleId } = useParams();
@@ -10,7 +11,7 @@ function Edit() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/client/${id}/articles`,{ withCredentials: true })
+    axios.get(`${URL}/client/${id}/articles`,{ withCredentials: true })
       .then(res => {
         const article = res.data.find(a => String(a.article_id) === String(articleId));
         if (article) {
@@ -25,7 +26,7 @@ function Edit() {
       return;
     }
     try {
-      await axios.post(`http://localhost:8000/client/${id}/edit-article`,{
+      await axios.post(`${URL}/client/${id}/edit-article`,{
         article_id: articleId,
         title,
         content,

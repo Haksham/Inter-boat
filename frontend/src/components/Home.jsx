@@ -1,24 +1,35 @@
 import { useState, useEffect } from 'react';
 import axios from "axios";
+import StatusFilter from "./StatusFilter";
+import LoadingSpinner from "./LoadingSpinner";
+
+const URL = import.meta.env.VITE_API_BASE_URL;
 
 function Home() {
   const [blogs, setBlogs] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   const fetchBlogs = async () => {
-    const response = await axios.get("http://localhost:8000/");
-    setBlogs(response.data);}
+    setLoading(true);
+    try {
+      const response = await axios.get(URL);
+      setBlogs(response.data);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  useEffect(() => {fetchBlogs();}, []);
+  useEffect(() => { fetchBlogs(); }, []);
 
   const toggleExpand = (articleId) => {
     setExpanded(prev => ({
       ...prev,
       [articleId]: !prev[articleId]
-    }));};
+    }));
+  };
 
-  // Filter blogs based on status
   const filteredBlogs = filter === "all" ? blogs : blogs.filter(blog => (blog.status || "pending").toLowerCase() === filter);
 
   return (
@@ -26,40 +37,12 @@ function Home() {
       <div className="max-w-2xl mx-auto mt-8">
         <div className="flex items-center mt-15 justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Client Blogs</h2>
-          {/* Desktop: show buttons inline, Mobile: show dropdown */}
-          <div>
-            {/* Mobile Dropdown */}
-            <div className="block sm:hidden">
-              <select className="px-3 py-1 rounded border" value={filter} onChange={e => setFilter(e.target.value)}>
-                <option value="accepted">Accepted</option>
-                <option value="rejected">Rejected</option>
-                <option value="pending">Pending</option>
-                <option value="all">All</option>
-              </select>
-            </div>
-            {/* Desktop Buttons */}
-            <div className="hidden sm:flex space-x-2">
-              <button
-                className={`px-3 py-1 rounded ${filter === "accepted" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-                onClick={() => setFilter("accepted")}> Accepted
-              </button>
-              <button
-                className={`px-3 py-1 rounded ${filter === "rejected" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-                onClick={() => setFilter("rejected")}> Rejected
-              </button>
-              <button
-                className={`px-3 py-1 rounded ${filter === "pending" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-                onClick={() => setFilter("pending")}> Pending
-              </button>
-              <button
-                className={`px-3 py-1 rounded ${filter === "all" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-                onClick={() => setFilter("all")}> All
-              </button>
-            </div>
-          </div>
+          <StatusFilter filter={filter} setFilter={setFilter} />
         </div>
         <div className="space-y-4">
-          {Array.isArray(filteredBlogs) && filteredBlogs.length > 0 ? (
+          {loading ? (
+            <div className="text-center text-blue-600 py-8"><LoadingSpinner /></div>
+          ) : Array.isArray(filteredBlogs) && filteredBlogs.length > 0 ? (
             filteredBlogs.map((blog, idx) => (
               <div key={idx}>
                 <div className="bg-white p-4 rounded shadow relative">
@@ -70,13 +53,12 @@ function Home() {
                     Submitted At: {blog.submitted_at}<br />
                     Status: {blog.status}
                   </p>
-                  {/* View More Button on bottom right */}
                   <button
-                    className="absolute right-2 bottom-2 text-blue-600 hover:underline text-sm" onClick={() => toggleExpand(blog.article_id)}>
+                    className="absolute right-2 bottom-2 text-blue-600 hover:underline text-sm"
+                    onClick={() => toggleExpand(blog.article_id)}>
                     {expanded[blog.article_id] ? "Hide" : "View More"}
                   </button>
                 </div>
-                {/* Article description/content, shown if expanded */}
                 {expanded[blog.article_id] && (
                   <div className="bg-gray-100 px-4 py-2 rounded-b shadow-inner text-gray-800">
                     <strong>Description:</strong>
@@ -84,9 +66,13 @@ function Home() {
                   </div>
                 )}
               </div>
-            ))) : (<p className="text-gray-500">No blogs available.</p>)}
+            ))
+          ) : (
+            <p className="text-gray-500">No blogs available.</p>
+          )}
         </div>
       </div>
     </>
-)}
+  );
+}
 export default Home;

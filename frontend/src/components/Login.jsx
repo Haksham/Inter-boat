@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+const URL=import.meta.env.VITE_API_BASE_URL;
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -16,21 +17,19 @@ function Login() {
     }
     setError("");
     try {
-      const response = await axios.post("http://localhost:8000/login", { username, password },{ withCredentials: true });
+      const response = await axios.post(`${URL}/login`, { username, password },{ withCredentials: true });
       if (response.data.success && response.data.role === "host") {
-        localStorage.setItem("username", username);
-        localStorage.setItem("userId", response.data.id);
-        localStorage.setItem("role", "host"); // Add this line
         navigate("/host");
         window.location.reload();
       } else if (response.data.success && response.data.role === "client") {
-        localStorage.setItem("username", username);
-        localStorage.setItem("userId", response.data.id);
-        localStorage.setItem("role", "client"); // Add this line
         navigate(`/client/${response.data.id}`);
         window.location.reload();
-      } else {setError("Invalid credentials or unknown role.");}
-    } catch (err) {setError("Invalid credentials.");}
+      } else {
+        setError("Invalid credentials or unknown role.");
+      }
+    } catch (err) {
+      setError("Invalid credentials.");
+    }
   };
 
   return (

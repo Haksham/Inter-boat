@@ -3,35 +3,40 @@ import { useEffect, useState } from "react";
 import { FiLogOut } from "react-icons/fi";
 import { GoHome } from "react-icons/go";
 import axios from "axios";
+const URL=import.meta.env.VITE_API_BASE_URL;
 
 function Header() {
-    const [username, setUsername] = useState(localStorage.getItem("username"));
-    const [userId, setUserId] = useState(localStorage.getItem("userId")); // Assuming you store userId
+    const [username, setUsername] = useState(null);
+    const [userId, setUserId] = useState(null);
+    const [role, setRole] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const onStorage = () => {
-            setUsername(localStorage.getItem("username"));
-            setUserId(localStorage.getItem("userId"));};
-        window.addEventListener("storage", onStorage);
-        return () => window.removeEventListener("storage", onStorage);
+        // Fetch session user info from backend
+        axios.get(`${URL}/me`, { withCredentials: true })
+            .then(res => {
+                setUsername(res.data.username);
+                setUserId(res.data.id);
+                setRole(res.data.role);
+            })
+            .catch(() => {
+                setUsername(null);
+                setUserId(null);
+                setRole(null);
+            });
     }, []);
 
     const handleLogout = async () => {
         try {
-            await axios.post("http://localhost:8000/logout", {}, { withCredentials: true });
+            await axios.post(`${URL}/logout`, {}, { withCredentials: true });
         } catch (err) {}
-        localStorage.setItem("logout", Date.now());
-        localStorage.removeItem("username");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("role"); // Add this line
         setUsername(null);
         setUserId(null);
+        setRole(null);
         window.location.href = "/login";
     };
 
     const handleTask = () => {
-        const role = localStorage.getItem("role");
         if (role === "host") {
             navigate("/host");
         } else if (role === "client") {

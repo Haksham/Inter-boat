@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+const URL=import.meta.env.VITE_API_BASE_URL;
 
 function Signup() {
   const [username, setUsername] = useState("");
@@ -16,7 +17,7 @@ function Signup() {
     }
     setError("");
     try{
-      const response = await axios.post("http://localhost:8000/createClient", { username, password });
+      const response = await axios.post(`${URL}/createClient`, { username, password });
       if (response.data.success && response.data.role === "client") {
         navigate(`/login`);
       } else {

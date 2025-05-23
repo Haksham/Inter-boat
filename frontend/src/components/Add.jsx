@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+const URL=import.meta.env.VITE_API_BASE_URL;
 
 function Add() {
   const { id } = useParams();
@@ -16,7 +17,7 @@ function Add() {
       return;
     }
     try {
-      await axios.post(`http://localhost:8000/client/${id}/add-article`,{
+      await axios.post(`${URL}/client/${id}/add-article`,{
         client_id: id, title, content,
       }, { withCredentials: true } );
       navigate(`/client/${id}`);

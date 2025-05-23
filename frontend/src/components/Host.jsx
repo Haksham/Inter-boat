@@ -3,17 +3,20 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { MdOutlineDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
+import StatusFilter from "./StatusFilter";
+import LoadingSpinner from "./LoadingSpinner";
+const URL = import.meta.env.VITE_API_BASE_URL;
 
 function Host() {
   const [blogs, setBlogs] = useState([]);
   const [statusUpdates, setStatusUpdates] = useState({});
   const [expanded, setExpanded] = useState({});
   const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Auth check before fetching blogs
   useEffect(() => {
-    axios.get("http://localhost:8000/me", { withCredentials: true })
+    axios.get(`${URL}/me`, { withCredentials: true })
       .then(res => {
         if (res.data.role !== "host") {
           navigate("/login");
@@ -22,15 +25,6 @@ function Host() {
         }
       })
       .catch(() => navigate("/login"));
-    // Listen for logout in other tabs
-    const onStorage = (e) => {
-      if (e.key === "logout") {
-        axios.get("http://localhost:8000/me", { withCredentials: true })
-          .catch(() => window.location.href = "/login");
-      }
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
     // eslint-disable-next-line
   }, [navigate]);
 
@@ -42,8 +36,13 @@ function Host() {
   };
 
   const fetchBlogs = async () => {
-    const response = await axios.get("http://localhost:8000/",{ withCredentials: true });
-    setBlogs(response.data);
+    setLoading(true);
+    try {
+      const response = await axios.get(`${URL}/`, { withCredentials: true });
+      setBlogs(response.data);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStatusChange = (articleId, value) => {
@@ -55,61 +54,38 @@ function Host() {
 
   const handleSave = async (articleId) => {
     try {
-      await axios.post("http://localhost:8000/host/update-status",{
+      await axios.post(`${URL}/host/update-status`, {
         article_id: articleId,
         status: statusUpdates[articleId] || "pending"
       },
-    { withCredentials: true } );
+        { withCredentials: true });
       fetchBlogs();
-    }catch (err) {alert("Failed to update status");}
+    } catch (err) { alert("Failed to update status"); }
   };
 
   const handleDelete = async (articleId) => {
     try {
-      await axios.post("http://localhost:8000/delete-article" ,{
-        article_id: articleId},
-      { withCredentials: true } );
-      fetchBlogs();} catch (err) {alert("Failed to delete article");}
+      await axios.post(`${URL}/delete-article`, {
+        article_id: articleId
+      },
+        { withCredentials: true });
+      fetchBlogs();
+    } catch (err) { alert("Failed to delete article"); }
   };
 
-  // Filter blogs based on status
-  const filteredBlogs = filter === "all" ? blogs: blogs.filter(blog => (blog.status || "pending").toLowerCase() === filter);
+  const filteredBlogs = filter === "all" ? blogs : blogs.filter(blog => (blog.status || "pending").toLowerCase() === filter);
 
   return (
     <>
       <div className="max-w-2xl mx-auto mt-8">
         <div className="flex items-center my-15 justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Client Blogs</h2>
-          {/* Responsive filter controls */}
-          <div>
-            {/* Mobile Dropdown */}
-            <div className="block sm:hidden">
-              <select className="px-3 py-1 rounded border" value={filter} onChange={e => setFilter(e.target.value)}>
-                <option value="accepted">Accepted</option>
-                <option value="rejected">Rejected</option>
-                <option value="pending">Pending</option>
-                <option value="all">All</option>
-              </select>
-            </div>
-            {/* Desktop Buttons */}
-            <div className="hidden sm:flex space-x-2">
-              <button
-                className={`px-3 py-1 rounded ${filter === "accepted" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-                onClick={() => setFilter("accepted")}>Accepted</button>
-              <button
-                className={`px-3 py-1 rounded ${filter === "rejected" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-                onClick={() => setFilter("rejected")}>Rejected</button>
-              <button
-                className={`px-3 py-1 rounded ${filter === "pending" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-                onClick={() => setFilter("pending")}>Pending</button>
-              <button
-                className={`px-3 py-1 rounded ${filter === "all" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
-                onClick={() => setFilter("all")}>All</button>
-            </div>
-          </div>
+          <StatusFilter filter={filter} setFilter={setFilter} />
         </div>
         <div className="space-y-4">
-          {Array.isArray(filteredBlogs) && filteredBlogs.length > 0 ? (
+          {loading ? (
+            <div className="text-center text-blue-600 py-8"><LoadingSpinner /></div>
+          ) : Array.isArray(filteredBlogs) && filteredBlogs.length > 0 ? (
             filteredBlogs.map((blog, idx) => (
               <div key={idx}>
                 <div className="bg-white p-3 rounded shadow flex items-center justify-between relative">
