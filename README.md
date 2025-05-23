@@ -1,6 +1,6 @@
 # 🚤 Inter-Boat
 
-A full-stack platform for managing client-submitted articles, with host moderation, built using **React**, **Express**, and **MySQL**.
+A full-stack platform for managing client-submitted articles, with host moderation, built using **React**, **Express**, **MySQL**, and **Redis** for server-side and client-side caching.
 
 ---
 
@@ -11,7 +11,7 @@ A full-stack platform for managing client-submitted articles, with host moderati
 
 ```
 inter-boat/
-├── .gitignore                # Git ignored files config (hidden)
+├── .gitignore
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
@@ -25,8 +25,9 @@ inter-boat/
 │   ├── package.json
 │   ├── requirements.txt
 │   ├── server.js
-│   ├── .env                  # (hidden, ignored by git)
-│   └── node_modules/         # (hidden, ignored by git)
+│   ├── .env
+│   ├── redisClient.js
+│   └── node_modules/
 ├── frontend/
 │   ├── public/
 │   ├── src/
@@ -51,8 +52,8 @@ inter-boat/
 │   ├── requirements.txt
 │   ├── vite.config.js
 │   ├── eslint.config.js
-│   ├── .env                  # (hidden, ignored by git)
-│   └── node_modules/         # (hidden, ignored by git)
+│   ├── .env
+│   └── node_modules/
 ```
 </details>
 
@@ -91,6 +92,7 @@ MYSQL_DATABASE=inter_boat
 SESSION_SECRET=your_session_secret
 EXPRESS_PORT=8000
 FRONTEND_URL=http://localhost:5173
+REDIS_URL=redis://localhost:6379
 ```
 
 #### c. Set Up the Database
@@ -131,7 +133,17 @@ CREATE TABLE article_status (
 
 - Optionally, seed with some users and articles using [`sql_sample_data.txt`](sql_sample_data.txt).
 
-#### d. Start the Backend Server
+#### d. Start Redis Server
+
+```bash
+sudo apt update
+sudo apt install redis-server
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+redis-cli ping  # Should return: PONG
+```
+
+#### e. Start the Backend Server
 
 ```bash
 npm run dev
@@ -191,6 +203,7 @@ MYSQL_DATABASE=inter_boat
 SESSION_SECRET=your_session_secret
 EXPRESS_PORT=8000
 FRONTEND_URL=http://localhost:5173
+REDIS_URL=redis://localhost:6379
 ```
 
 **Frontend `.env` example:**
@@ -207,13 +220,16 @@ VITE_API_BASE_URL=http://localhost:8000
 
 See [`backend/package.json`](backend/package.json):
 
-`express`, `cors`, `dotenv`, `mysql2`, `express-session`, `express-mysql-session`, `react-icons`, `nodemon` (dev)
+- express, cors, dotenv, mysql2, express-session, express-mysql-session  
+- ioredis, react-icons, nodemon (dev)
 
 ### Frontend
 
 See [`frontend/package.json`](frontend/package.json):
 
-`react`, `react-dom`, `react-router-dom`, `axios`, `tailwindcss`, `@tailwindcss/vite`, `vite`, `vite-plugin-qrcode`, `react-icons`, `eslint` (dev), `@vitejs/plugin-react` (dev)
+- react, react-dom, react-router-dom, axios, tailwindcss  
+- @tailwindcss/vite, vite, vite-plugin-qrcode, react-icons  
+- @tanstack/react-query, eslint (dev), @vitejs/plugin-react (dev)
 
 ---
 
@@ -228,6 +244,8 @@ See [`frontend/package.json`](frontend/package.json):
 - **Responsive UI with TailwindCSS**
 - **Role-based Access Control**
 - **Persistent MySQL-backed Sessions**
+- **Server-side caching with Redis**
+- **Client-side caching with React Query**
 - **Live QR code for dev server (via vite-plugin-qrcode)**
 - **404 Not Found Page**
 - **Reusable Header & Footer**
@@ -238,7 +256,7 @@ See [`frontend/package.json`](frontend/package.json):
 
 ## 💡 Tips
 
-- Make sure MySQL is running and accessible with the credentials you provide.
+- Make sure MySQL and Redis are running and accessible with the credentials you provide.
 - Use different browsers or incognito mode to test host and client roles simultaneously.
 - For production, use hashed passwords and secure session management.
 - Environment files (`.env`) are ignored by git for security.
