@@ -1,26 +1,46 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MdOutlineDelete } from "react-icons/md";
 import { MdEdit } from "react-icons/md";
 import { IoIosAddCircle } from "react-icons/io";
 import StatusFilter from "./StatusFilter";
-const URL = import.meta.env.VITE_API_BASE_URL;
 import LoadingSpinner from "./LoadingSpinner";
+const URL = import.meta.env.VITE_API_BASE_URL;
 
 function Client() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [articles, setArticles] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [filter, setFilter] = useState("all");
-  const [loading, setLoading] = useState(true); // Add loading state
+  const queryClient = useQueryClient();
 
-  const handleDelete = async (articleId) => {
-    try {
+  // Fetch articles with React Query
+  const { data: articles = [], isLoading } = useQuery({
+    queryKey: ['client-articles', id],
+    queryFn: async () => {
+      // Check session/role before fetching
+      const session = await axios.get(`${URL}/me`, { withCredentials: true });
+      if (session.data.role !== "client") {
+        navigate("/login");
+        return [];
+      }
+      const response = await axios.get(`${URL}/client/${id}/articles`, { withCredentials: true });
+      return response.data;
+    }
+  });
+
+  // Mutations for delete
+  const deleteMutation = useMutation({
+    mutationFn: async (articleId) => {
       await axios.post(`${URL}/delete-article`, { article_id: articleId }, { withCredentials: true });
-      setArticles(articles.filter(article => article.article_id !== articleId));
-    } catch (err) { alert("Failed to delete article"); }
+    },
+    onSuccess: () => queryClient.invalidateQueries(['client-articles', id])
+  });
+
+  const handleDelete = (articleId) => {
+    deleteMutation.mutate(articleId);
   };
 
   const handleEdit = (articleId) => { navigate(`/client/${id}/edit/${articleId}`); };
@@ -34,26 +54,9 @@ function Client() {
     }));
   };
 
-  // Filter articles based on status
-  const filteredArticles = filter === "all" ? articles : articles.filter(article => (article.status || "pending").toLowerCase() === filter);
-
-  useEffect(() => {
-    setLoading(true);
-    axios.get(`${URL}/me`, { withCredentials: true })
-      .then(res => {
-        if (res.data.role !== "client") {
-          navigate("/login");
-        } else {
-          axios.get(`${URL}/client/${id}/articles`, { withCredentials: true })
-            .then(res => setArticles(res.data))
-            .finally(() => setLoading(false));
-        }
-      })
-      .catch(() => {
-        navigate("/login");
-        setLoading(false);
-      });
-  }, [id, navigate]);
+  const filteredArticles = filter === "all"
+    ? articles
+    : articles.filter(article => (article.status || "pending").toLowerCase() === filter);
 
   return (
     <div className="max-w-2xl mx-auto mt-8">
@@ -71,7 +74,7 @@ function Client() {
         </div>
       </div>
       <div className="space-y-4">
-        {loading ? (
+        {isLoading ? (
           <div className="text-center text-blue-600 py-8"><LoadingSpinner /></div>
         ) : Array.isArray(filteredArticles) && filteredArticles.length > 0 ? (
           filteredArticles.map((article, idx) => (
@@ -91,18 +94,18 @@ function Client() {
                     <MdEdit />
                   </button>
                   <button className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-                    onClick={() => handleDelete(article.article_id)}>
+                    onClick={() => handleDelete(article.article_id)}
+                    disabled={deleteMutation.isPending}
+                  >
                     <MdOutlineDelete />
                   </button>
                 </div>
-                {/* View More Button on bottom right */}
                 <button
                   className="absolute right-2 bottom-2 text-blue-600 hover:underline text-sm"
                   onClick={() => toggleExpand(article.article_id)}>
                   {expanded[article.article_id] ? "Hide" : "View More"}
                 </button>
               </div>
-              {/* Article description/content, shown if expanded */}
               {expanded[article.article_id] && (
                 <div className="bg-gray-100 px-4 py-2 rounded-b shadow-inner text-gray-800">
                   <strong>Description:</strong>

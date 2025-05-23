@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import axios from "axios";
 import StatusFilter from "./StatusFilter";
 import LoadingSpinner from "./LoadingSpinner";
@@ -6,22 +7,16 @@ import LoadingSpinner from "./LoadingSpinner";
 const URL = import.meta.env.VITE_API_BASE_URL;
 
 function Home() {
-  const [blogs, setBlogs] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [filter, setFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
 
-  const fetchBlogs = async () => {
-    setLoading(true);
-    try {
+  const { data: blogs = [], isLoading } = useQuery({
+    queryKey: ['blogs'],
+    queryFn: async () => {
       const response = await axios.get(URL);
-      setBlogs(response.data);
-    } finally {
-      setLoading(false);
+      return response.data;
     }
-  };
-
-  useEffect(() => { fetchBlogs(); }, []);
+  });
 
   const toggleExpand = (articleId) => {
     setExpanded(prev => ({
@@ -40,7 +35,7 @@ function Home() {
           <StatusFilter filter={filter} setFilter={setFilter} />
         </div>
         <div className="space-y-4">
-          {loading ? (
+          {isLoading ? (
             <div className="text-center text-blue-600 py-8"><LoadingSpinner /></div>
           ) : Array.isArray(filteredBlogs) && filteredBlogs.length > 0 ? (
             filteredBlogs.map((blog, idx) => (

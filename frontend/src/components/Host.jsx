@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MdOutlineDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
 import StatusFilter from "./StatusFilter";
@@ -8,41 +9,50 @@ import LoadingSpinner from "./LoadingSpinner";
 const URL = import.meta.env.VITE_API_BASE_URL;
 
 function Host() {
-  const [blogs, setBlogs] = useState([]);
   const [statusUpdates, setStatusUpdates] = useState({});
   const [expanded, setExpanded] = useState({});
   const [filter, setFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    axios.get(`${URL}/me`, { withCredentials: true })
-      .then(res => {
-        if (res.data.role !== "host") {
-          navigate("/login");
-        } else {
-          fetchBlogs();
-        }
-      })
-      .catch(() => navigate("/login"));
-    // eslint-disable-next-line
-  }, [navigate]);
+  // Fetch blogs with React Query
+  const { data: blogs = [], isLoading } = useQuery({
+    queryKey: ['blogs'],
+    queryFn: async () => {
+      // Check session/role before fetching
+      const session = await axios.get(`${URL}/me`, { withCredentials: true });
+      if (session.data.role !== "host") {
+        navigate("/login");
+        return [];
+      }
+      const response = await axios.get(`${URL}/`, { withCredentials: true });
+      return response.data;
+    }
+  });
+
+  // Mutations for status update and delete
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ article_id, status }) => {
+      await axios.post(`${URL}/host/update-status`, {
+        article_id,
+        status
+      }, { withCredentials: true });
+    },
+    onSuccess: () => queryClient.invalidateQueries(['blogs'])
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (article_id) => {
+      await axios.post(`${URL}/delete-article`, { article_id }, { withCredentials: true });
+    },
+    onSuccess: () => queryClient.invalidateQueries(['blogs'])
+  });
 
   const toggleExpand = (articleId) => {
     setExpanded(prev => ({
       ...prev,
       [articleId]: !prev[articleId]
     }));
-  };
-
-  const fetchBlogs = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`${URL}/`, { withCredentials: true });
-      setBlogs(response.data);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleStatusChange = (articleId, value) => {
@@ -52,28 +62,20 @@ function Host() {
     }));
   };
 
-  const handleSave = async (articleId) => {
-    try {
-      await axios.post(`${URL}/host/update-status`, {
-        article_id: articleId,
-        status: statusUpdates[articleId] || "pending"
-      },
-        { withCredentials: true });
-      fetchBlogs();
-    } catch (err) { alert("Failed to update status"); }
+  const handleSave = (articleId) => {
+    updateStatusMutation.mutate({
+      article_id: articleId,
+      status: statusUpdates[articleId] || "pending"
+    });
   };
 
-  const handleDelete = async (articleId) => {
-    try {
-      await axios.post(`${URL}/delete-article`, {
-        article_id: articleId
-      },
-        { withCredentials: true });
-      fetchBlogs();
-    } catch (err) { alert("Failed to delete article"); }
+  const handleDelete = (articleId) => {
+    deleteMutation.mutate(articleId);
   };
 
-  const filteredBlogs = filter === "all" ? blogs : blogs.filter(blog => (blog.status || "pending").toLowerCase() === filter);
+  const filteredBlogs = filter === "all"
+    ? blogs
+    : blogs.filter(blog => (blog.status || "pending").toLowerCase() === filter);
 
   return (
     <>
@@ -83,13 +85,12 @@ function Host() {
           <StatusFilter filter={filter} setFilter={setFilter} />
         </div>
         <div className="space-y-4">
-          {loading ? (
+          {isLoading ? (
             <div className="text-center text-blue-600 py-8"><LoadingSpinner /></div>
           ) : Array.isArray(filteredBlogs) && filteredBlogs.length > 0 ? (
             filteredBlogs.map((blog, idx) => (
               <div key={idx}>
                 <div className="bg-white p-3 rounded shadow flex items-center justify-between relative">
-                  {/* Blog details */}
                   <div>
                     <h3 className="text-lg font-bold text-blue-800">{blog.title || `Blog #${idx + 1}`}</h3>
                     <p className="text-gray-700 mt-2">
@@ -99,7 +100,6 @@ function Host() {
                       Status: {blog.status}
                     </p>
                   </div>
-                  {/* Select and Save/Delete buttons on the right */}
                   <div className="flex flex-col items-center">
                     <select
                       className="border rounded px-2 py-1 mb-2"
@@ -111,30 +111,36 @@ function Host() {
                     </select>
                     <button
                       className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                      onClick={() => handleSave(blog.article_id)}>
+                      onClick={() => handleSave(blog.article_id)}
+                      disabled={updateStatusMutation.isPending}
+                    >
                       <SiTicktick />
                     </button>
                     <button
                       className="bg-red-600 text-white px-3 py-1 my-1 rounded hover:bg-blue-700"
-                      onClick={() => handleDelete(blog.article_id)}>
+                      onClick={() => handleDelete(blog.article_id)}
+                      disabled={deleteMutation.isPending}
+                    >
                       <MdOutlineDelete />
                     </button>
                   </div>
-                  {/* View More Button on bottom right */}
                   <button
                     className="absolute right-2 bottom-2 text-blue-600 hover:underline text-sm"
                     onClick={() => toggleExpand(blog.article_id)}>
                     {expanded[blog.article_id] ? "Hide" : "View More"}
                   </button>
                 </div>
-                {/* Article description/content, shown if expanded */}
                 {expanded[blog.article_id] && (
                   <div className="bg-gray-100 px-4 py-2 rounded-b shadow-inner text-gray-800">
                     <strong>Description:</strong>
                     <div className="whitespace-pre-line mt-1">{blog.content || "No description available."}</div>
-                  </div>)}
+                  </div>
+                )}
               </div>
-            ))) : (<p className="text-gray-500">No blogs available.</p>)}
+            ))
+          ) : (
+            <p className="text-gray-500">No blogs available.</p>
+          )}
         </div>
       </div>
     </>

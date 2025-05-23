@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mysql = require("mysql2");
+const redis = require('../redisClient');
 require('dotenv').config();
 
 const db = mysql.createConnection({
@@ -14,21 +15,35 @@ db.connect((err) => {
   console.log('MySQL connected....');
 });
 
-router.get('/', (req, res) => {
-  const query = `
-    select 
-      a.id as article_id,
-      a.title,
-      a.content,
-      a.client_id,
-      a.submitted_at,
-      s.status
-    from articles a
-    left join article_status s on s.article_id = a.id;
-  `;
-  db.query(query, (err, results) => {
-    res.json(results);
-  });
+router.get('/', async (req, res) => {
+  const cacheKey = "all_articles";
+  try {
+    // 1. Try to get from Redis cache
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
+    // 2. If not cached, fetch from DB
+    const query = `
+      select 
+        a.id as article_id,
+        a.title,
+        a.content,
+        a.client_id,
+        a.submitted_at,
+        s.status
+      from articles a
+      left join article_status s on s.article_id = a.id;
+    `;
+    db.query(query, async (err, results) => {
+      if (err) return res.status(500).json({ error: "Database error" });
+      // 3. Cache the result in Redis for 60 seconds
+      await redis.set(cacheKey, JSON.stringify(results), 'EX', 60);
+      res.json(results);
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 router.post('/login', (req, res) => {
@@ -49,21 +64,24 @@ router.post('/login', (req, res) => {
   );
 });
 
-router.post("/delete-article",(req,res)=>{
+router.post("/delete-article", async (req, res) => {
   const article_id = req.body.article_id;
   const query = "delete from articles where id = ?";
-  db.query(query, [article_id], (err, results) => {
+  db.query(query, [article_id], async (err, results) => {
     if (err) return res.status(500).json({ error: "Database error" });
+    await redis.del("all_articles"); // Invalidate cache
     res.json({ success: true });
   });
 })
 
-router.post("/host/update-status", (req, res) => {
+router.post("/host/update-status", async (req, res) => {
   const {article_id,status}=req.body;
   const updated_by = 1;
   const query =`update article_status set status = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP where article_id = ?`;
-  db.query(query,[status, updated_by,article_id],(err,results)=>{
+  db.query(query,[status, updated_by,article_id], async (err,results)=>{
     if (err) return res.status(500).json({ error: "Database error" });
+    await redis.del("all_articles");
+    // Optionally, also invalidate the client cache if you know the client_id
     res.json({ success: true });
   })
 });
