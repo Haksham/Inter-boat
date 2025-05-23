@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const mysql = require("mysql2");
-const { requireLogin, requireRole } = require('../middleware/session');
 require('dotenv').config();
 
 const db = mysql.createConnection({
@@ -40,14 +39,11 @@ router.post('/login', (req, res) => {
     (err, results) => {
       if (err) return res.status(500).json({ error: "Database error" });
       if (results.length === 0) return res.status(401).json({ error: "Invalid credentials" });
-
-      // Set session
       req.session.user = {
         id: results[0].id,
         username: results[0].username,
         role: results[0].role
       };
-
       res.json({ success: true, role: results[0].role, id: results[0].id  });
     }
   );
